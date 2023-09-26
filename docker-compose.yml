@@ -1,0 +1,34 @@
+services:
+
+  rabbitmq:
+    image: 'rabbitmq:3.12-alpine'
+
+    # Exposing ports: 'host_port:container_port'
+    # To the host system
+    #ports:
+    # Default AMQP protocol port
+    #  - '5672:5672'
+
+    networks:
+      - private_network
+
+  external_in_out:
+    # runs external_in_out/Dockerfile.
+    build: external_in_out
+    environment:
+      AMQP_URL: 'amqp://rabbitmq?connection_attempts=5&retry_delay=5'
+    networks:
+      - private_network
+
+  preprocess:
+    # runs preprocess/Dockerfile.
+    build: preprocess
+    environment:
+      AMQP_URL: 'amqp://rabbitmq?connection_attempts=5&retry_delay=5'
+    networks:
+      - private_network
+
+networks:
+  # Declare our private network.  We must declare one for the magic
+  # Docker DNS to work, but otherwise its default settings are fine.
+  private_network: {}
