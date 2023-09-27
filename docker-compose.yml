@@ -14,17 +14,23 @@ services:
 
   external_in_out:
     # runs external_in_out/Dockerfile.
-    build: external_in_out
+    build:
+      context: ./
+      dockerfile: ./external_in_out/Dockerfile
     environment:
-      AMQP_URL: 'amqp://rabbitmq?connection_attempts=5&retry_delay=5'
+      AMQP_URL: 'amqp://rabbitmq:5672/%2F?connection_attempts=5&retry_delay=5'
+    volumes:
+      - /tmp/test:/tmp/in
     networks:
       - private_network
 
   preprocess:
     # runs preprocess/Dockerfile.
-    build: preprocess
+    build:
+      context: ./
+      dockerfile: ./preprocess/Dockerfile
     environment:
-      AMQP_URL: 'amqp://rabbitmq?connection_attempts=5&retry_delay=5'
+      AMQP_URL: 'amqp://rabbitmq:5672/%2F?connection_attempts=5&retry_delay=5'
     networks:
       - private_network
 

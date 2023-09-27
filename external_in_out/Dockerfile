@@ -6,9 +6,12 @@ ENV DIRECTORY_OUT="/tmp/out/"
 
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt && mkdir $DIRECTORY_IN $DIRECTORY_OUT
+COPY external_in_out/requirements.txt ./
+COPY common/requirements.txt ./requirements-common.txt
+RUN pip install --no-cache-dir -r requirements-common.txt -r requirements.txt  \
+    && mkdir $DIRECTORY_IN $DIRECTORY_OUT
 
-COPY . .
+COPY common ./common
+COPY external_in_out/main.py .
 
-CMD [ "/usr/local/bin/python", "./main.py" ]
+CMD [ "/usr/local/bin/python", "-u", "./main.py" ]

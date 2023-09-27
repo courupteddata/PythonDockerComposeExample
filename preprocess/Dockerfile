@@ -3,9 +3,11 @@ FROM python:3.11-bookworm
 
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY preprocess/requirements.txt ./
+COPY common/requirements.txt ./requirements-common.txt
+RUN pip install --no-cache-dir -r requirements-common.txt -r requirements.txt
 
-COPY . .
+COPY common ./common
+COPY preprocess/main.py .
 
-CMD [ "/usr/local/bin/python", "./main.py" ]
+CMD [ "/usr/local/bin/python", "-u", "./main.py" ]

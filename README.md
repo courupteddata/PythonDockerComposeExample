@@ -14,3 +14,6 @@
 
 ## Running
 `docker compose up`
+
+## Forcing clean build
+`docker compose up --build --force-recreate --no-deps`
