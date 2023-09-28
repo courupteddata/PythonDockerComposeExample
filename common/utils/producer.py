@@ -46,10 +46,10 @@ class Producer(threading.Thread):
         # Turn on delivery confirmations
         self._channel.confirm_delivery()
 
-    def produce(self, data_message: DataMessage, queue_name: str, publish_response: Callable[[bool], None]):
-        self._connection.add_callback_threadsafe(lambda: self._produce(data_message, queue_name, publish_response))
+    def publish(self, data_message: DataMessage, queue_name: str, publish_response: Callable[[bool], None]):
+        self._connection.add_callback_threadsafe(lambda: self._publish(data_message, queue_name, publish_response))
 
-    def _produce(self, data_message: DataMessage, queue_name: str, publish_response: Callable[[bool], None]):
+    def _publish(self, data_message: DataMessage, queue_name: str, publish_response: Callable[[bool], None]):
         try:
             self._channel.basic_publish(exchange=self._exchange,
                                         routing_key=queue_name,
@@ -57,7 +57,6 @@ class Producer(threading.Thread):
                                         properties=pika.BasicProperties(content_type="binary",
                                                                         expiration="86400000", # Expiration 24 hours in milliseconds
                                                                         delivery_mode=DeliveryMode.Persistent.value))
-            LOGGER.info('Message publish was confirmed')
             publish_response(True)
         except UnroutableError:
             LOGGER.error('Message could not be confirmed')

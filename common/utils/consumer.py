@@ -16,7 +16,7 @@ LOGGER = logger.get_logger(__name__)
 
 
 class Consumer(threading.Thread):
-    def __init__(self, amqp_url: str, queue_names: list[str], on_message: Callable[[DataMessage], bool],
+    def __init__(self, amqp_url: str, queue_names: list[str], on_message: Callable[[DataMessage, str], bool],
                  durable: bool = True, exchange: str = "test"):
         super().__init__()
         self._amqp_url = amqp_url
@@ -52,7 +52,9 @@ class Consumer(threading.Thread):
                              properties: spec.BasicProperties, body: bytes):
 
         with ThreadPoolExecutor(max_workers=1) as executor:
-            future: Future = executor.submit(self._on_message, DataMessage.deserialize(body))
+            future: Future = executor.submit(self._on_message,
+                                             DataMessage.deserialize(body),
+                                             method_frame.routing_key)
             while future.running():
                 self._connection.process_data_events(time_limit=1)
                 self._connection.sleep(1)
