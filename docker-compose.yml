@@ -8,7 +8,11 @@ services:
     #ports:
     # Default AMQP protocol port
     #  - '5672:5672'
-
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 5s
+      timeout: 30s
+      retries: 3
     networks:
       - private_network
 
@@ -25,7 +29,8 @@ services:
     networks:
       - private_network
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
 
   preprocess:
     # runs preprocess/Dockerfile.
@@ -38,7 +43,8 @@ services:
     networks:
       - private_network
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
 
   process:
     # runs process/Dockerfile.
@@ -51,7 +57,8 @@ services:
     networks:
       - private_network
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
 
   java_process:
     # runs java_process/Dockerfile.
@@ -64,7 +71,8 @@ services:
     networks:
       - private_network
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
 
 networks:
   # Declare our private network.  We must declare one for the magic

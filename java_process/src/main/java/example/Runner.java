@@ -30,6 +30,7 @@ public class Runner {
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
             channel.basicQos(1);
+            channel.exchangeDeclare(EXCHANGE, BuiltinExchangeType.DIRECT, true, false, null);
             channel.queueDeclare(INPUT_QUEUE_NAME, true, false, false, null);
             channel.queueDeclare(OUTPUT_QUEUE_NAME, true, false, false, null);
             channel.queueBind(INPUT_QUEUE_NAME, EXCHANGE, INPUT_QUEUE_NAME);
