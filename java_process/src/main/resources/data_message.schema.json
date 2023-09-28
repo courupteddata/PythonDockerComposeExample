@@ -1,0 +1,1 @@
+{"properties": {"content": {"title": "Content", "type": "string"}, "creation_datetime": {"format": "date-time", "title": "Creation Datetime", "type": "string"}}, "required": ["content", "creation_datetime"], "title": "DataMessage", "type": "object"}

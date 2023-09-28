@@ -17,3 +17,10 @@
 
 ## Forcing clean build
 `docker compose up --build --force-recreate --no-deps`
+
+## Getting JSON Schema
+```python
+import json
+from common.models.datamessage import DataMessage
+print(json.dumps(DataMessage.model_json_schema()))
+```

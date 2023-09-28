@@ -46,6 +46,16 @@ services:
       AMQP_URL: 'amqp://rabbitmq:5672/%2F?connection_attempts=5&retry_delay=5'
     networks:
       - private_network
+  java_process:
+    # runs java_process/Dockerfile.
+    build:
+      context: ./
+      dockerfile: ./java_process/Dockerfile
+    restart: unless-stopped
+    environment:
+      AMQP_URL: 'amqp://rabbitmq:5672/%2F?connection_attempts=5&retry_delay=5'
+    networks:
+      - private_network
 
 networks:
   # Declare our private network.  We must declare one for the magic
