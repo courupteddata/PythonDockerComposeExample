@@ -37,6 +37,7 @@ class Consumer(threading.Thread):
         signal.signal(signal.SIGHUP, self._signal_cleanup)
 
     def _signal_cleanup(self, signum: int, frame):
+        LOGGER.info(f"Received signal {signum}")
         if self._connection.is_open:
             self._connection.add_callback_threadsafe(lambda: self._connection.close())
 
@@ -67,6 +68,9 @@ class Consumer(threading.Thread):
     def _start_consuming(self):
         # This is a blocking call
         self._channel.start_consuming()
+
+    def is_running(self):
+        return self.is_alive()
 
     def run(self) -> None:
         self._start_consuming()

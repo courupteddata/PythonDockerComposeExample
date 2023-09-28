@@ -23,12 +23,9 @@ def main():
 
     _producer = producer.Producer(amqp_url, [QUEUE_NAME])
 
-    def publish_response(was_success: bool):
-        LOGGER.info(f"Published message successfully {was_success}")
-
     with producer.Producer(amqp_url, [QUEUE_NAME]) as _producer:
         existing_files = set()
-        while True:
+        while _producer.is_running():
             # Sleep not really needed just don't want crazy IO
             time.sleep(0.001)
             found_files = set()

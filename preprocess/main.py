@@ -18,7 +18,7 @@ def main():
     amqp_url = os.environ[AMQP_URL]
 
     with Consumer(amqp_url, [QUEUE_NAME], on_message) as _consumer:
-        while True:
+        while _consumer.is_running():
             pass
 
 

@@ -35,6 +35,7 @@ class Producer(threading.Thread):
         signal.signal(signal.SIGHUP, self._signal_cleanup)
 
     def _signal_cleanup(self, signum: int, frame):
+        LOGGER.info(f"Received signal {signum}")
         self._is_running = False
 
     def _setup(self):
@@ -64,7 +65,14 @@ class Producer(threading.Thread):
 
     def run(self):
         while self._is_running:
-            self._connection.process_data_events(time_limit=1)
+            try:
+                self._connection.process_data_events(time_limit=1)
+            except Exception as e:
+                self._is_running = False
+                LOGGER.warning(f"Closing producer: {e}")
+
+    def is_running(self):
+        return self._is_running
 
     def stop(self):
         self._is_running = False
