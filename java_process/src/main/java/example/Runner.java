@@ -1,14 +1,21 @@
 package example;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 import com.rabbitmq.client.*;
 
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -17,12 +24,18 @@ public class Runner {
     private static final String INPUT_QUEUE_NAME = "process.java.out";
     private static final String OUTPUT_QUEUE_NAME = "process.java.in";
     private static final String EXCHANGE = "test";
-    private static final Gson GSON_PARSER = new Gson();
 
     private static volatile boolean running = true;
 
     public static void main(String[] args) throws URISyntaxException, NoSuchAlgorithmException, KeyManagementException, IOException, TimeoutException {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> running=false));
+
+        InputStream resource = Runner.class.getClassLoader().getResourceAsStream("data_message.schema.json");
+        JsonSchema jsonSchema =  JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012).getSchema(resource);
+        jsonSchema.initializeValidators();
+        ObjectMapper mapper = new ObjectMapper();
+
+
 
         ConnectionFactory factory = new ConnectionFactory();
         String rabbitMQUrl = System.getenv("AMQP_URL");
@@ -41,7 +54,7 @@ public class Runner {
 
                 System.out.println("Received");
                 try {
-                    doWork(delivery.getBody(), channel);
+                    doWork(delivery.getBody(), channel, mapper, jsonSchema);
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                 } finally {
@@ -57,34 +70,34 @@ public class Runner {
         }
      }
 
-    private static void doWork(byte[] body, Channel channel) throws IOException {
-        DataMessage dataMessage = loadJSON(body);
+    private static void doWork(byte[] body, Channel channel, ObjectMapper objectMapper, JsonSchema jsonSchema) throws IOException {
+        JsonNode jsonNode = loadJSON(body, objectMapper);
+        Set<ValidationMessage> errors = jsonSchema.validate(jsonNode);
+        for (ValidationMessage validationMessage : errors) {
+            System.out.println(validationMessage);
+        }
 
         channel.basicPublish("", OUTPUT_QUEUE_NAME,
                 new AMQP.BasicProperties().builder().expiration("86400000")
                         .contentEncoding("binary").deliveryMode(2).build(),
-                dumpJSON(dataMessage));
+                dumpJSON(jsonNode, objectMapper));
     }
 
 
-    private static DataMessage loadJSON(byte[] gzippedEncodedInput) throws IOException {
+    private static JsonNode loadJSON(byte[] gzippedEncodedInput, ObjectMapper objectMapper) throws IOException {
         try (InputStream inputStream = new GZIPInputStream(new ByteArrayInputStream(gzippedEncodedInput))) {
-            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                inputStream.transferTo(outputStream);
-                System.out.println(outputStream.toString(StandardCharsets.UTF_8));
-                return GSON_PARSER.fromJson(outputStream.toString(StandardCharsets.UTF_8), DataMessage.class);
-            }
+            return objectMapper.readTree(inputStream);
+
         }
     }
 
-    private static byte[] dumpJSON(DataMessage dataMessage) throws IOException {
-        byte[] bytes = GSON_PARSER.toJson(dataMessage).getBytes();
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream(bytes.length);
-                GZIPOutputStream gos = new GZIPOutputStream(bos);
-             ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
-            bis.transferTo(gos);
+    private static byte[] dumpJSON(JsonNode dataMessage, ObjectMapper objectMapper) throws IOException {
+
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                GZIPOutputStream gos = new GZIPOutputStream(bos);) {
+            objectMapper.writer().writeValue(bos, dataMessage);
             return bos.toByteArray();
-
         }
     }
+
 }
