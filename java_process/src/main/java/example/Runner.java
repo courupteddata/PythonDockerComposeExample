@@ -58,6 +58,7 @@ public class Runner {
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                 } finally {
+                    System.out.println("Done");
                     channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                 }
             };
@@ -95,7 +96,7 @@ public class Runner {
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 GZIPOutputStream gos = new GZIPOutputStream(bos);) {
-            objectMapper.writer().writeValue(bos, dataMessage);
+            objectMapper.writer().writeValue(gos, dataMessage);
             return bos.toByteArray();
         }
     }
