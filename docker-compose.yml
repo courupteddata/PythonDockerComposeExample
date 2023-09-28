@@ -24,6 +24,8 @@ services:
       - /tmp/test:/tmp/in
     networks:
       - private_network
+    depends_on:
+      - rabbitmq
 
   preprocess:
     # runs preprocess/Dockerfile.
@@ -35,6 +37,8 @@ services:
       AMQP_URL: 'amqp://rabbitmq:5672/%2F?connection_attempts=5&retry_delay=5'
     networks:
       - private_network
+    depends_on:
+      - rabbitmq
 
   process:
     # runs process/Dockerfile.
@@ -46,6 +50,9 @@ services:
       AMQP_URL: 'amqp://rabbitmq:5672/%2F?connection_attempts=5&retry_delay=5'
     networks:
       - private_network
+    depends_on:
+      - rabbitmq
+
   java_process:
     # runs java_process/Dockerfile.
     build:
@@ -56,6 +63,8 @@ services:
       AMQP_URL: 'amqp://rabbitmq:5672/%2F?connection_attempts=5&retry_delay=5'
     networks:
       - private_network
+    depends_on:
+      - rabbitmq
 
 networks:
   # Declare our private network.  We must declare one for the magic

@@ -41,10 +41,9 @@ public class Runner {
                 System.out.println("Received");
                 try {
                     doWork(delivery.getBody(), channel);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     System.out.println(e.getMessage());
                 } finally {
-                    System.out.println("Done");
                     channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                 }
             };
@@ -71,9 +70,8 @@ public class Runner {
         try (InputStream inputStream = new GZIPInputStream(new ByteArrayInputStream(gzippedEncodedInput))) {
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 inputStream.transferTo(outputStream);
-                DataMessage dataMessage = GSON_PARSER.fromJson(outputStream.toString(StandardCharsets.UTF_8), DataMessage.class);
-                System.out.println(dataMessage);
-                return dataMessage;
+                System.out.println(outputStream.toString(StandardCharsets.UTF_8));
+                return GSON_PARSER.fromJson(outputStream.toString(StandardCharsets.UTF_8), DataMessage.class);
             }
         }
     }
