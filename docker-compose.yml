@@ -17,6 +17,7 @@ services:
     build:
       context: ./
       dockerfile: ./external_in_out/Dockerfile
+    restart: unless-stopped
     environment:
       AMQP_URL: 'amqp://rabbitmq:5672/%2F?connection_attempts=5&retry_delay=5'
     volumes:
@@ -29,6 +30,7 @@ services:
     build:
       context: ./
       dockerfile: ./preprocess/Dockerfile
+    restart: unless-stopped
     environment:
       AMQP_URL: 'amqp://rabbitmq:5672/%2F?connection_attempts=5&retry_delay=5'
     networks:
