@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-file-in-out
+  namespace: compose-example
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: external-file-in-out
+  template:
+    metadata:
+      labels:
+        app: external-file-in-out
+    spec:
+      securityContext:
+        runAsGroup: 0
+        runAsUser: 0
+        seccompProfile:
+          type: Unconfined
+      containers:
+        - name: external-in-out
+          image: pythoncomposeexample-external_in_out:latest
+          imagePullPolicy: Never
+          env:
+            - name: AMQP_URL
+              value: 'amqp://rabbitmq:5672/%2F?connection_attempts=5&retry_delay=5'
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi
+              cpu: 200m
+          volumeMounts:
+            - name: input-host-mount
+              mountPath: /tmp/in
+          # readinessProbe:
+          # livenessProbe:
+      volumes:
+        - name: input-host-mount
+          hostPath:
+            path: /tmp/test
+            type: DirectoryOrCreate

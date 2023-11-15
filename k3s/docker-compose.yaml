@@ -2,7 +2,9 @@ version: '3'
 services:
   server:
     image: "rancher/k3s:v1.28.3-k3s2"
-    command: server
+    command:
+    - server
+    # - --docker
     tmpfs:
     - /run
     - /var/run
@@ -20,6 +22,7 @@ services:
     volumes:
     - k3s-server:/var/lib/rancher/k3s
     - ./images:/var/lib/rancher/k3s/agent/images
+    - ./server-id:/etc/machine-id
     # This is just so that we get the kubeconfig file out
     # - .:/output
     ports:
@@ -45,6 +48,7 @@ services:
     volumes:
       - k3s-agent:/var/lib/rancher/k3s
       - ./images:/var/lib/rancher/k3s/agent/images
+      - ./agent-id:/etc/machine-id
 
 volumes:
   k3s-server: {}
