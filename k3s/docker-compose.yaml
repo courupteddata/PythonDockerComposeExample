@@ -1,4 +1,4 @@
-version: '3'
+# version: '3'
 services:
   server:
     image: "rancher/k3s:v1.28.3-k3s2"
@@ -15,8 +15,8 @@ services:
         hard: 65535
     privileged: true
     restart: always
-    environment:
-    - K3S_TOKEN=${K3S_TOKEN:?err}
+    # environment:
+    # - K3S_TOKEN=${K3S_TOKEN:?err}
     # - K3S_KUBECONFIG_OUTPUT=/output/kubeconfig.yaml
     # - K3S_KUBECONFIG_MODE=666
     volumes:
@@ -30,26 +30,5 @@ services:
     - 80:80      # Ingress controller port 80
     - 443:443    # Ingress controller port 443
 
-  agent:
-    image: "rancher/k3s:v1.28.3-k3s2"
-    tmpfs:
-    - /run
-    - /var/run
-    ulimits:
-      nproc: 65535
-      nofile:
-        soft: 65535
-        hard: 65535
-    privileged: true
-    restart: always
-    environment:
-    - K3S_URL=https://server:6443
-    - K3S_TOKEN=${K3S_TOKEN:?err}
-    volumes:
-      - k3s-agent:/var/lib/rancher/k3s
-      - ./images:/var/lib/rancher/k3s/agent/images
-      - ./agent-id:/etc/machine-id
-
 volumes:
   k3s-server: {}
-  k3s-agent: {}
